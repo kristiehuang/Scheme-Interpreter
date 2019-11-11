@@ -224,12 +224,16 @@ def do_define_form(expressions, env):
         check_form(expressions, 2, 2)
         # BEGIN PROBLEM 5
         val = scheme_eval(expressions.rest.first, env)
-        env.define(expressions.first, val)
+        env.define(target, val)
         return target
         # END PROBLEM 5
     elif isinstance(target, Pair) and scheme_symbolp(target.first):
         # BEGIN PROBLEM 9
-        "*** YOUR CODE HERE ***"
+        target = expressions.first.first
+        expr = Pair(expressions.first.rest, expressions.rest)
+        lam = do_lambda_form(expr, env)
+        env.define(target, lam)
+        return target
         # END PROBLEM 9
     else:
         bad_target = target.first if isinstance(target, Pair) else target
@@ -253,7 +257,7 @@ def do_lambda_form(expressions, env):
     formals = expressions.first
     check_formals(formals)
     # BEGIN PROBLEM 8
-    "*** YOUR CODE HERE ***"
+    return LambdaProcedure(formals, expressions.rest, env)
     # END PROBLEM 8
 
 def do_if_form(expressions, env):
