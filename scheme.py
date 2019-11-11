@@ -33,7 +33,11 @@ def scheme_eval(expr, env, _=None): # Optional third argument is ignored
         return SPECIAL_FORMS[first](rest, env)
     else:
         # BEGIN PROBLEM 4
-        "*** YOUR CODE HERE ***"
+        op = scheme_eval(expr.first, env)
+        check_procedure(op)
+        new_args = expr.rest.map(lambda a: scheme_eval(a, env))
+        return scheme_apply(op, new_args, env)
+
         # END PROBLEM 4
 
 def self_evaluating(expr):
@@ -54,7 +58,13 @@ def eval_all(expressions, env):
     """Evaluate each expression in the Scheme list EXPRESSIONS in
     environment ENV and return the value of the last."""
     # BEGIN PROBLEM 7
-    return scheme_eval(expressions.first, env)
+    if expressions == nil:
+        return None
+    val = scheme_eval(expressions.first, env)
+    if expressions.rest == nil:
+        return val
+    return eval_all(expressions.rest, env)
+
     # END PROBLEM 7
 
 ################
@@ -213,7 +223,9 @@ def do_define_form(expressions, env):
     if scheme_symbolp(target):
         check_form(expressions, 2, 2)
         # BEGIN PROBLEM 5
-        "*** YOUR CODE HERE ***"
+        val = scheme_eval(expressions.rest.first, env)
+        env.define(expressions.first, val)
+        return target
         # END PROBLEM 5
     elif isinstance(target, Pair) and scheme_symbolp(target.first):
         # BEGIN PROBLEM 9
@@ -227,7 +239,7 @@ def do_quote_form(expressions, env):
     """Evaluate a quote form."""
     check_form(expressions, 1, 1)
     # BEGIN PROBLEM 6
-    "*** YOUR CODE HERE ***"
+    return expressions.first
     # END PROBLEM 6
 
 def do_begin_form(expressions, env):
