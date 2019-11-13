@@ -88,14 +88,12 @@ class Frame(object):
     def define(self, symbol, value):
         """Define Scheme SYMBOL to have VALUE."""
         # BEGIN PROBLEM 2
-        "*** YOUR CODE HERE ***"
         self.bindings[symbol] = value
         # END PROBLEM 2
 
     def lookup(self, symbol):
         """Return the value bound to SYMBOL. Errors if SYMBOL is not found."""
         # BEGIN PROBLEM 2
-        "*** YOUR CODE HERE ***"
         if symbol in self.bindings:
             return self.bindings[symbol]
         elif self.parent != None:
@@ -116,7 +114,13 @@ class Frame(object):
         <{a: 1, b: 2, c: 3} -> <Global Frame>>
         """
         # BEGIN PROBLEM 10
-        "*** YOUR CODE HERE ***"
+        newF = Frame(self)
+        if len(formals) != len(vals):
+            raise SchemeError
+        while formals != nil:
+            newF.define(formals.first, vals.first)
+            formals, vals = formals.rest, vals.rest
+        return newF
         # END PROBLEM 10
 
 ##############
@@ -182,7 +186,7 @@ class LambdaProcedure(Procedure):
         """Make a frame that binds my formal parameters to ARGS, a Scheme list
         of values, for a lexically-scoped call evaluated in environment ENV."""
         # BEGIN PROBLEM 11
-        "*** YOUR CODE HERE ***"
+        return self.env.make_child_frame(self.formals, args)
         # END PROBLEM 11
 
     def __str__(self):
@@ -271,13 +275,28 @@ def do_if_form(expressions, env):
 def do_and_form(expressions, env):
     """Evaluate a (short-circuited) and form."""
     # BEGIN PROBLEM 12
-    "*** YOUR CODE HERE ***"
+    if not len(expressions):
+        return True
+    else:
+        while expressions.rest != nil:
+            if scheme_falsep(scheme_eval(expressions.first, env)):
+                return False
+            expressions = expressions.rest
+        return scheme_eval(expressions.first, env)
     # END PROBLEM 12
 
 def do_or_form(expressions, env):
     """Evaluate a (short-circuited) or form."""
     # BEGIN PROBLEM 12
-    "*** YOUR CODE HERE ***"
+    if not len(expressions):
+        return False
+    else:
+        while expressions.rest != nil:
+            exp = scheme_eval(expressions.first, env)
+            if scheme_truep(exp):
+                return exp
+            expressions = expressions.rest
+        return scheme_eval(expressions.first, env)
     # END PROBLEM 12
 
 def do_cond_form(expressions, env):
