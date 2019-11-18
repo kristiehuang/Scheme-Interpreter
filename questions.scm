@@ -15,17 +15,45 @@
 ;; Returns a list of two-element lists
 (define (enumerate s)
   ; BEGIN PROBLEM 16
-  'replace-this-line
+  (define (enum-iter i s)
+    (if (null? s)
+        '()
+        (cons (list i (car s)) (enum-iter (+ i 1) (cdr s)))
+    ))
+  (enum-iter 0 s)
   )
   ; END PROBLEM 16
 
-;; Problem 17
-;; List all ways to make change for TOTAL with DENOMS
-(define (list-change total denoms)
+  (define (list-change total denoms)
   ; BEGIN PROBLEM 17
-  'replace-this-line
+    (define (cons-all f rs) 
+      (if (null? rs) (list (cons f nil))
+      (map (lambda (x) (append (list f) x)) rs)
+      )
+    )
+    (define denoms-new (filter (lambda (x) (>= total x)) denoms))
+
+  ; (cond
+  ;   ((null? denoms) nil)
+  ;   ((eq? total 0) nil)
+  ;   (else (cons
+  ;           (append 
+  ;             (list (car denoms-new))   (list-change (- total (car denoms-new)) denoms-new))
+  ;           (list-change total (cdr denoms-new))))
+  ; )
+  ; )
+
+  (cond
+    ((null? denoms) nil)
+    ((< total 0) nil)
+    ((eq? total 0) (cons (cons (car denoms) nil) nil))
+    ((> (car denoms) total) (list-change total (cdr denoms)))
+    ((= (car denoms) total) (append (list-change (- total (car denoms)) denoms) (list-change total (cdr denoms))))
+    (else (append (cons-all (car denoms) (list-change (- total (car denoms)) denoms)) (list-change total (cdr denoms))))
   )
-  ; END PROBLEM 17
+  )
+    ; END PROBLEM 17
+
 
 ;; Problem 18
 ;; Returns a function that checks if an expression is the special form FORM

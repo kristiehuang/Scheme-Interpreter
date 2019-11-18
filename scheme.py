@@ -312,7 +312,10 @@ def do_cond_form(expressions, env):
             test = scheme_eval(clause.first, env)
         if scheme_truep(test):
             # BEGIN PROBLEM 13
-            "*** YOUR CODE HERE ***"
+            if clause.rest == nil:
+                return test
+            else:
+                return eval_all(clause.rest, env)
             # END PROBLEM 13
         expressions = expressions.rest
 
@@ -330,8 +333,18 @@ def make_let_frame(bindings, env):
     if not scheme_listp(bindings):
         raise SchemeError('bad bindings list in let form')
     # BEGIN PROBLEM 14
-    "*** YOUR CODE HERE ***"
+    formals, values = nil, nil
+
+    while bindings != nil:
+        check_form(bindings.first, 2, 2)
+        formals = Pair(bindings.first.first, formals)
+        values = Pair(scheme_eval(bindings.first.rest.first, env), values)
+        bindings = bindings.rest
+
+    check_formals(formals)
+    return env.make_child_frame(formals, values)
     # END PROBLEM 14
+
 
 def do_define_macro(expressions, env):
     """Evaluate a define-macro form."""
@@ -447,7 +460,12 @@ class MuProcedure(Procedure):
         self.body = body
 
     # BEGIN PROBLEM 15
-    "*** YOUR CODE HERE ***"
+    def make_call_frame(self, args, env):
+        """Make a frame that binds my formal parameters to ARGS, a Scheme list
+        of values, for a DYNAMICALLY-scoped call evaluated in environment ENV."""
+        # BEGIN PROBLEM 11
+        return env.make_child_frame(self.formals, args)
+        # END PROBLEM 11
     # END PROBLEM 15
 
     def __str__(self):
@@ -463,7 +481,10 @@ def do_mu_form(expressions, env):
     formals = expressions.first
     check_formals(formals)
     # BEGIN PROBLEM 15
-    "*** YOUR CODE HERE ***"
+    mu = MuProcedure(formals, expressions.rest)
+    mu.make_call_frame(formals, env)
+    return mu
+
     # END PROBLEM 15
 
 SPECIAL_FORMS['mu'] = do_mu_form
