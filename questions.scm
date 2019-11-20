@@ -5,11 +5,31 @@
 
 ; Some utility functions that you may find useful to implement.
 
-(define (cons-all first rests)
-  'replace-this-line)
+(define (cons-all f rs) 
+      (if (null? rs) (list (cons f nil))
+      (map (lambda (x) (append (list f) x)) rs)
+      )
+)
 
 (define (zip pairs)
-  'replace-this-line)
+  ; (define keys nil)
+  ; (define values nil)
+  ; ; for list in pairs:
+  ; ;   (define keys (cons (car list) keys))
+  ; ;   (define values (cons (cadr list) values))
+  ; ; keys, values
+  ; (begin
+  ;   (map (lambda (list) (
+  ;                       (define keys (cons (car list) keys))
+  ;                       (define values (cons (cadr list) values))
+  ;         )
+  ;             ) pairs)
+  ;   (list keys values)
+
+
+      (list (map car pairs) (map cadr pairs))
+
+)
 
 ;; Problem 16
 ;; Returns a list of two-element lists
@@ -26,31 +46,14 @@
 
   (define (list-change total denoms)
   ; BEGIN PROBLEM 17
-    (define (cons-all f rs) 
-      (if (null? rs) (list (cons f nil))
-      (map (lambda (x) (append (list f) x)) rs)
-      )
+    (cond
+      ((null? denoms) '())
+      ((< total 0) '())
+      ((eq? total 0) (cons (cons (car denoms) nil) nil))
+      ((> (car denoms) total) (list-change total (cdr denoms)))
+      ((= (car denoms) total) (append (list-change (- total (car denoms)) denoms) (list-change total (cdr denoms))))
+      (else (append (cons-all (car denoms) (list-change (- total (car denoms)) denoms)) (list-change total (cdr denoms))))
     )
-    (define denoms-new (filter (lambda (x) (>= total x)) denoms))
-
-  ; (cond
-  ;   ((null? denoms) nil)
-  ;   ((eq? total 0) nil)
-  ;   (else (cons
-  ;           (append 
-  ;             (list (car denoms-new))   (list-change (- total (car denoms-new)) denoms-new))
-  ;           (list-change total (cdr denoms-new))))
-  ; )
-  ; )
-
-  (cond
-    ((null? denoms) nil)
-    ((< total 0) nil)
-    ((eq? total 0) (cons (cons (car denoms) nil) nil))
-    ((> (car denoms) total) (list-change total (cdr denoms)))
-    ((= (car denoms) total) (append (list-change (- total (car denoms)) denoms) (list-change total (cdr denoms))))
-    (else (append (cons-all (car denoms) (list-change (- total (car denoms)) denoms)) (list-change total (cdr denoms))))
-  )
   )
     ; END PROBLEM 17
 
@@ -69,12 +72,12 @@
 (define (let-to-lambda expr)
   (cond ((atom? expr)
          ; BEGIN PROBLEM 18
-         'replace-this-line
+         expr
          ; END PROBLEM 18
          )
         ((quoted? expr)
          ; BEGIN PROBLEM 18
-         'replace-this-line
+         expr
          ; END PROBLEM 18
          )
         ((or (lambda? expr)
@@ -83,18 +86,25 @@
                (params (cadr expr))
                (body   (cddr expr)))
            ; BEGIN PROBLEM 18
-           'replace-this-line
+           (cons form 
+                (cons (map (lambda (x) (let-to-lambda x)) params) 
+                      (map (lambda (x) (let-to-lambda x)) body))
+            )
            ; END PROBLEM 18
            ))
         ((let? expr)
          (let ((values (cadr expr))
                (body   (cddr expr)))
            ; BEGIN PROBLEM 18
-           'replace-this-line
+           (cons (cons 'lambda (cons (car (zip (let-to-lambda values) )) 
+                                      (let-to-lambda body))
+                                  ) 
+                  (car (cdr (zip (let-to-lambda values) )))
+            )
            ; END PROBLEM 18
            ))
         (else
          ; BEGIN PROBLEM 18
-         'replace-this-line
+         (map (lambda (x) (let-to-lambda x)) expr)
          ; END PROBLEM 18
          )))
