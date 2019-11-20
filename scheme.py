@@ -35,6 +35,11 @@ def scheme_eval(expr, env, _=None): # Optional third argument is ignored
         # BEGIN PROBLEM 4
         op = scheme_eval(expr.first, env)
         check_procedure(op)
+
+        if type(op) is MacroProcedure:
+            new_macro_expr = op.apply_macro(rest, env)
+            return scheme_eval(new_macro_expr, env, True)
+
         new_args = expr.rest.map(lambda a: scheme_eval(a, env))
         return scheme_apply(op, new_args, env)
 
@@ -60,10 +65,12 @@ def eval_all(expressions, env):
     # BEGIN PROBLEM 7
     if expressions == nil:
         return None
-    val = scheme_eval(expressions.first, env)
-    if expressions.rest == nil:
-        return val
-    return eval_all(expressions.rest, env)
+    else:
+        if expressions.rest == nil:
+            return scheme_eval(expressions.first, env, True)
+        else:
+            scheme_eval(expressions.first, env)
+            return eval_all(expressions.rest, env)
 
     # END PROBLEM 7
 
@@ -267,10 +274,13 @@ def do_lambda_form(expressions, env):
 def do_if_form(expressions, env):
     """Evaluate an if form."""
     check_form(expressions, 2, 3)
+    print("DEBUG:", 'asdfsafa', len(expressions))
+
     if scheme_truep(scheme_eval(expressions.first, env)):
-        return scheme_eval(expressions.rest.first, env)
+        return scheme_eval(expressions.rest.first, env, True)
     elif len(expressions) == 3:
-        return scheme_eval(expressions.rest.rest.first, env)
+        print("DEBUG:", 'hellllo')
+        return scheme_eval(expressions.rest.rest.first, env, True)
 
 def do_and_form(expressions, env):
     """Evaluate a (short-circuited) and form."""
@@ -282,7 +292,7 @@ def do_and_form(expressions, env):
             if scheme_falsep(scheme_eval(expressions.first, env)):
                 return False
             expressions = expressions.rest
-        return scheme_eval(expressions.first, env)
+        return scheme_eval(expressions.first, env, True)
     # END PROBLEM 12
 
 def do_or_form(expressions, env):
@@ -296,7 +306,7 @@ def do_or_form(expressions, env):
             if scheme_truep(exp):
                 return exp
             expressions = expressions.rest
-        return scheme_eval(expressions.first, env)
+        return scheme_eval(expressions.first, env, True)
     # END PROBLEM 12
 
 def do_cond_form(expressions, env):
@@ -349,7 +359,14 @@ def make_let_frame(bindings, env):
 def do_define_macro(expressions, env):
     """Evaluate a define-macro form."""
     # BEGIN Problem 20
-    "*** YOUR CODE HERE ***"
+    check_form(expressions, 2)
+    target = expressions.first
+    check_formals(target)
+    check_form(target, 0)
+
+    formals = target.rest 
+    env.define(target.first, MacroProcedure(formals, expressions.rest, env))
+    return target.first
     # END Problem 20
 
 
@@ -366,7 +383,7 @@ def do_quasiquote_form(expressions, env):
             if level == 0:
                 expressions = val.rest
                 check_form(expressions, 1, 1)
-                return scheme_eval(expressions.first, env)
+                return scheme_eval(expressions.first, env, True)
         elif val.first == 'quasiquote':
             level += 1
 
@@ -555,8 +572,8 @@ def optimize_tail_calls(original_scheme_eval):
 
         result = Thunk(expr, env)
         # BEGIN
-        while type(result) == Thunk:
-            result = original_scheme_eval(expr, env)
+        while type(result) is Thunk:
+            result = original_scheme_eval(result.expr, result.env)
         return result
 
          # END
@@ -566,11 +583,10 @@ def optimize_tail_calls(original_scheme_eval):
 
 
 
-
 ################################################################
 # Uncomment the following line to apply tail call optimization #
 ################################################################
-#scheme_eval = optimize_tail_calls(scheme_eval)
+scheme_eval = optimize_tail_calls(scheme_eval)
 
 
 
